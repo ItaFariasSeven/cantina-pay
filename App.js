@@ -1,0 +1,59 @@
+import { NavigationContainer } from '@react-navigation/native'; // npm install @react-navigation/native     npx expo install react-native-screens react-native-safe-area-context
+import { createNativeStackNavigator } from '@react-navigation/native-stack'; // npm install @react-navigation/native-stack
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; // npm install @react-navigation/bottom-tabs
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View } from 'react-native';
+import NavBar from './src/components/NavBar';
+import Login from './src/screens/Login';
+import Shopping from './src/screens/Shopping';
+
+const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+// GRUPO DE TELAS COM A NAVBAR
+function MainApp() {
+  return (
+    <Tab.Navigator 
+      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <NavBar {...props} />} 
+    >
+      {/* Coloque aqui todas as telas que DEVEM ter a NavBar */}
+      <Tab.Screen name="Shopping" component={Shopping} />
+      {/* <Tab.Screen name="Explore" component={PlaceholderScreen} /> */}
+      {/* <Tab.Screen name="Action" component={PlaceholderScreen} /> */}
+      {/* <Tab.Screen name="Notifications" component={PlaceholderScreen} /> */}
+      {/* <Tab.Screen name="Profile" component={PlaceholderScreen} /> */}
+    </Tab.Navigator>
+  );
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator 
+        screenOptions={{ headerShown: false }}
+      >
+
+      <Stack.Screen 
+        name='Login'
+        component={Login}
+        />
+
+      <Stack.Screen 
+        name='MainTabs' 
+        component={MainApp}
+      />
+
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    // backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
