@@ -1,52 +1,91 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons'; 
+import Ionicons from '@expo/vector-icons/Ionicons';
+import Octicons from '@expo/vector-icons/Octicons';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
-export default function NavBar() {
-  const navigation = useNavigation();
+
+
+export default function NavBar({ state, navigation }) {
+
+    const telaAtual = state.routes[state.index].name;
+
+    const isShoppingAtivo = telaAtual === 'Shopping';
+    const isHistoryBuyAtivo = telaAtual === 'HistoryBuy';
+    const isHistoryPayAtivo = telaAtual === 'HistoryPay';
+    const isCreateAtivo = telaAtual === 'Create';
+    const isUserAtivo = telaAtual === 'User';
 
   return (
     <View style={styles.footerContainer}>
       
-      {/* Botão 1 - Home */}
+      {/* Botão 1 - Compras */}
       <TouchableOpacity 
-        style={styles.iconButton}
+        style={[
+            styles.iconButton,
+            isShoppingAtivo ? styles.botaoAtivo : null
+        ]}
         onPress={() => navigation.navigate('Shopping')}
       >
-        <Feather name="home" size={24} color="#fafaf9" />
+        <Feather 
+            name="shopping-cart" 
+            size={24} 
+            color={isShoppingAtivo ? '#000' : "#fafaf9"}
+            style={isShoppingAtivo ? styles.iconWhithShadow : null}
+        />
       </TouchableOpacity>
 
-      {/* Botão 2 - Busca/Explorar */}
+      {/* Botão 2 - Histórico de compras */}
       <TouchableOpacity 
         style={styles.iconButton}
-        onPress={() => navigation.navigate('Explore')}
+        onPress={() => navigation.navigate('HistoryBuy')}
       >
-        <Feather name="search" size={24} color="#fafaf9" />
+        <Ionicons 
+            name="bag-outline" 
+            size={24} 
+            color={isHistoryBuyAtivo ? '#000' : "#fafaf9"}
+            style={isHistoryBuyAtivo ? styles.iconWhithShadow : null}
+        />
       </TouchableOpacity>
 
-      {/* Botão 3 - Ação Central */}
+      {/* Botão 3 - Histórico de pagamentos */}
       <TouchableOpacity 
         style={styles.iconButton}
-        onPress={() => navigation.navigate('Action')}
+        onPress={() => navigation.navigate('HistoryPay')}
       >
-        <Feather name="plus-square" size={24} color="#fafaf9" />
+        <Octicons 
+            name="checklist" 
+            size={24} 
+            color={isHistoryPayAtivo ? '#000' : "#fafaf9"}
+            style={isHistoryPayAtivo ? styles.iconWhithShadow : null} 
+        />
       </TouchableOpacity>
 
-      {/* Botão 4 - Notificações */}
+      {/* Botão 4 - Adicionar */}
       <TouchableOpacity 
         style={styles.iconButton}
-        onPress={() => navigation.navigate('Notifications')}
+        onPress={() => navigation.navigate('Create')}
       >
-        <Feather name="bell" size={24} color="#fafaf9" />
+        <FontAwesome6 
+            name="add" 
+            size={24} 
+            color={isCreateAtivo ? '#000' : "#fafaf9"}
+            style={isCreateAtivo ? styles.iconWhithShadow : null}  
+        />
       </TouchableOpacity>
 
       {/* Botão 5 - Perfil */}
       <TouchableOpacity 
         style={styles.iconButton}
-        onPress={() => navigation.navigate('Profile')}
+        onPress={() => navigation.navigate('User')}
       >
-        <Feather name="user" size={24} color="#fafaf9" />
+        <Feather 
+            name="user" 
+            size={24} 
+            color={isUserAtivo ? '#000' : "#fafaf9"}
+            style={isUserAtivo ? styles.iconWhithShadow : null} 
+        />
       </TouchableOpacity>
 
     </View>
@@ -56,26 +95,30 @@ export default function NavBar() {
 const styles = StyleSheet.create({
   footerContainer: {
     width: '100%',
-    height: 64, // Equivalente ao h-16
-    backgroundColor: '#ea580c', // Cor de fundo laranja
-    borderTopLeftRadius: 30, // Arredondamento do topo esquerdo
-    borderTopRightRadius: 30, // Arredondamento do topo direito
-    flexDirection: 'row', // Alinha os ícones lado a lado
-    justifyContent: 'space-evenly', // Distribui os ícones com espaçamento igual
-    alignItems: 'center', // Centraliza verticalmente
+    height: 70, 
+    backgroundColor: '#ea580c', 
+    borderTopLeftRadius: 30, 
+    borderTopRightRadius: 30, 
+    flexDirection: 'row', 
+    justifyContent: 'space-evenly', 
+    alignItems: 'center', 
     
-    // Deixa o footer fixo na parte de baixo da tela
     position: 'absolute',
     bottom: 0,
     
-    // Adiciona uma sombra leve para destacar (opcional, fica muito bom no mobile)
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 5, // Sombra no Android
-  },
-  iconButton: {
-    padding: 10, // Aumenta a área de clique (hitbox) para facilitar o toque
+    elevation: 5, 
+},
+iconButton: {
+    padding: 20
+},
+iconWhithShadow:{
+    textShadowColor: 'rgba(1, 1, 1, 1)', 
+    textShadowOffset: { width: 2, height: 1 }, 
+    textShadowRadius: 4, 
+}
   }
-});
+);

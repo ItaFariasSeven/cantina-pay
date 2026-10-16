@@ -6,6 +6,10 @@ import { StyleSheet, Text, View } from 'react-native';
 import NavBar from './src/components/NavBar';
 import Login from './src/screens/Login';
 import Shopping from './src/screens/Shopping';
+import HistoryBuy from './src/screens/HistoryBuy';
+import HistoryPay from './src/screens/HistoryPay';
+import Create from './src/screens/Create';
+import User from './src/screens/User';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -19,10 +23,10 @@ function MainApp() {
     >
       {/* Coloque aqui todas as telas que DEVEM ter a NavBar */}
       <Tab.Screen name="Shopping" component={Shopping} />
-      {/* <Tab.Screen name="Explore" component={PlaceholderScreen} /> */}
-      {/* <Tab.Screen name="Action" component={PlaceholderScreen} /> */}
-      {/* <Tab.Screen name="Notifications" component={PlaceholderScreen} /> */}
-      {/* <Tab.Screen name="Profile" component={PlaceholderScreen} /> */}
+      <Tab.Screen name="HistoryBuy" component={HistoryBuy} />
+      <Tab.Screen name="HistoryPay" component={HistoryPay} />
+      <Tab.Screen name="Create" component={Create} />
+      <Tab.Screen name="User" component={User} />
     </Tab.Navigator>
   );
 }
