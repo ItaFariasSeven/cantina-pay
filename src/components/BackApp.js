@@ -6,33 +6,43 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 
-export default function BackApp({ children }) {
+export default function BackApp({ children, title, showSearch = true }) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fcd34d" />
       
       {/* CABEÇALHO (Search e Botões) */}
       <View style={styles.headerRow}>
-        
-        {/* Barra de Pesquisa */}
-        <View style={styles.searchContainer}>
-          <TextInput 
-            style={styles.searchInput}
-            placeholder="Pesquisar"
-            placeholderTextColor="#78716c" 
-          />
+        {showSearch ? (
+        <>
+            {/* Barra de Pesquisa */}
+            <View style={styles.searchContainer}>
+              <TextInput 
+                style={styles.searchInput}
+                placeholder="Pesquisar"
+                placeholderTextColor="#78716c" 
+              />
+            </View>
+            
+            {/* Botão de Ação 1 carrinho de compras */}
+            <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
+              <MaterialIcons name="shopping-cart" size={30} color="#ea580c" />
+            </TouchableOpacity>
+            
+            {/* Botão de Ação 2 Adiciona Usuário */}
+            <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
+              <FontAwesome6 name="user-plus" size={25} color="#ea580c" />
+            </TouchableOpacity>
+        </>
+
+        ) : (
+
+        <View style={styles.containerMainTitleTop}>
+            <View style={styles.containerTitleTop}>
+                <Text style={styles.titleTop}>{title}</Text>
+            </View>
         </View>
-
-        {/* Botão de Ação 1 carrinho de compras */}
-        <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
-          <MaterialIcons name="shopping-cart" size={30} color="#ea580c" />
-        </TouchableOpacity>
-
-        {/* Botão de Ação 2 (Ex: Favoritos/Sacola) */}
-        <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
-          <FontAwesome6 name="user-plus" size={25} color="#ea580c" />
-        </TouchableOpacity>
-
+        )}
       </View>
 
       {/* RESTANTE DA TELA */}
@@ -98,5 +108,28 @@ searchInput: {
     color: '#ea580c',
     fontSize: 16,
     fontWeight: 'bold',
-  }
+  },
+  containerMainTitleTop:{
+    width: '100%', 
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  containerTitleTop:{
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+  },
+  titleTop: {
+    width: '100%',
+    textAlign: 'center', 
+    color: '#fafaf9', 
+    fontSize: 30, 
+    fontWeight: 'bold', 
+    textTransform: 'capitalize', 
+    
+    textShadowColor: 'rgba(0, 0, 0, 0.5)', 
+    textShadowOffset: { width: 3, height: 3 }, 
+    textShadowRadius: 1, 
+  },
 });

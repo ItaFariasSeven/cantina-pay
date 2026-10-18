@@ -5,7 +5,7 @@ import BackApp from '../components/BackApp'
 export default function User() {
   return (
 
-    <BackApp></BackApp>
+    <BackApp showSearch={false} title="Usuário"></BackApp>
 
   )
 }

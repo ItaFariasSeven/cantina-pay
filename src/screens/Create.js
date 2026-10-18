@@ -5,7 +5,7 @@ import BackApp from '../components/BackApp'
 export default function Create() {
   return (
 
-    <BackApp></BackApp>
+    <BackApp showSearch={false} title="Criar Novo"></BackApp>
 
   )
 }
