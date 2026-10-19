@@ -95,10 +95,10 @@ export default function NavBar({ state, navigation }) {
 const styles = StyleSheet.create({
   footerContainer: {
     width: '100%',
-    height: 70, 
+    height: '8%', 
     backgroundColor: '#ea580c', 
-    borderTopLeftRadius: 30, 
-    borderTopRightRadius: 30, 
+    borderTopLeftRadius: 20, 
+    borderTopRightRadius: 20, 
     flexDirection: 'row', 
     justifyContent: 'space-evenly', 
     alignItems: 'center', 

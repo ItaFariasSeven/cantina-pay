@@ -6,7 +6,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 
-export default function BackApp({ children, title, showSearch = true }) {
+export default function BackApp({ children, title, showSearch = true, onCartPress, onClientPress }) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fcd34d" />
@@ -25,16 +25,15 @@ export default function BackApp({ children, title, showSearch = true }) {
             </View>
             
             {/* Botão de Ação 1 carrinho de compras */}
-            <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.actionButton} activeOpacity={0.8} onPress={onCartPress}>
               <MaterialIcons name="shopping-cart" size={30} color="#ea580c" />
             </TouchableOpacity>
             
             {/* Botão de Ação 2 Adiciona Usuário */}
-            <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.actionButton} activeOpacity={0.8} onPress={onClientPress}>
               <FontAwesome6 name="user-plus" size={25} color="#ea580c" />
             </TouchableOpacity>
         </>
-
         ) : (
 
         <View style={styles.containerMainTitleTop}>
