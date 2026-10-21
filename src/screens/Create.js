@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     width: 180,
   },
   prodImage: { 
-    width: 74, 
+    Width: 74, 
     height: 107, 
     borderRadius: 20, 
     backgroundColor: '#ccc',
@@ -250,25 +250,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   nomeAlunoText: { 
-    color: '#ffffff', 
+    color: '#707070', 
     fontSize: 18, 
     fontWeight: 'bold',
   },
   nomePaiText: { 
-    color: '#ffffff', 
+    color: '#707070', 
     fontSize: 11, 
     fontWeight: 'bold', 
     marginTop: 2,
   },
   dataText: { 
-    color: '#ffffff', 
+    color: '#707070', 
     fontSize: 13, 
     fontWeight: 'bold', 
     width: 120, 
     textAlign: 'center',
   },
   valorText: { 
-    color: '#ffffff', 
+    color: '#707070', 
     fontSize: 18, 
     fontWeight: 'bold', 
     width: 80, 
