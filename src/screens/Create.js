@@ -34,6 +34,8 @@ export default function Create() {
     { id: '2', nomeAluno: 'João Silva', nomePai: 'Carlos Silva', data: '29 Nov, 15:20 pm', valor: 'R$45.00' },
     { id: '3', nomeAluno: 'Maria Souza', nomePai: 'Ana Souza', data: '30 Nov, 08:10 am', valor: 'R$22.50' },
     { id: '4', nomeAluno: 'Pedro Santos', nomePai: 'Marcos Santos', data: '01 Dez, 12:45 pm', valor: 'R$15.00' },
+    { id: '5', nomeAluno: 'Pedro Santos', nomePai: 'Marcos Santos', data: '01 Dez, 12:45 pm', valor: 'R$15.00' },
+    { id: '6', nomeAluno: 'Pedro Santos', nomePai: 'Marcos Santos', data: '01 Dez, 12:45 pm', valor: 'R$16.00' },
   ];
 
   // Inteligência de busca para os alunos
@@ -125,14 +127,16 @@ export default function Create() {
           renderItem={({ item, index }) => {
             const isPar = index % 2 === 0;
             return (
-              <View style={[styles.clienteItem, isPar ? styles.itemCorEscura : styles.itemCorClara]}>
-                <View style={styles.colunaEsquerda}>
-                  <Text style={styles.nomeAlunoText}>{item.nomeAluno}</Text>
-                  <Text style={styles.nomePaiText}>{item.nomePai}</Text>
+              // <View style={styles.containerListCreate}>
+                <View style={[styles.clienteItem, isPar ? styles.itemCorEscura : styles.itemCorClara]}>
+                  <View style={styles.colunaEsquerda}>
+                    <Text style={styles.nomeAlunoText}>{item.nomeAluno}</Text>
+                    <Text style={styles.nomePaiText}>{item.nomePai}</Text>
+                  </View>
+                  <Text style={styles.dataText}>{item.data}</Text>
+                  <Text style={styles.valorText}>{item.valor}</Text>
                 </View>
-                <Text style={styles.dataText}>{item.data}</Text>
-                <Text style={styles.valorText}>{item.valor}</Text>
-              </View>
+              // </View> 
             );
           }}
           ListEmptyComponent={
@@ -154,6 +158,7 @@ const styles = StyleSheet.create({
   contentWrapper: { 
     flex: 1, 
     width: '100%', 
+    height: '96%'
   },
   headerWrapper: { 
     paddingBottom: 10,
@@ -236,6 +241,10 @@ const styles = StyleSheet.create({
     fontSize: 16, 
     marginTop: 5,
   },
+  // containerListCreate:{
+  //   flex: 1,
+  //   bottom: '60%'
+  // },
   clienteItem: { 
     flexDirection: 'row', 
     alignItems: 'center', 

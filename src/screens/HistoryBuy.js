@@ -133,8 +133,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
   },
-  itemCorEscura: { backgroundColor: '#eab308' }, // bg-yellow-500
-  itemCorClara: { backgroundColor: '#fcd34d' },  // bg-amber-300
+  itemCorEscura: { backgroundColor: '#eab308' }, 
+  itemCorClara: { backgroundColor: '#fcd34d' },  
   colunaEsquerda: {
     flex: 1,
     justifyContent: 'center',
