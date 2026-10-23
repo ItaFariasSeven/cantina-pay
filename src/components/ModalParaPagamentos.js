@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 
 export default function ModalParaPagamentos({ visible, compra, onClose, onPagar, onConfirmar }) {
   const [valorPagar, setValorPagar] = useState('');
@@ -29,7 +30,16 @@ export default function ModalParaPagamentos({ visible, compra, onClose, onPagar,
         
         <View style={styles.modalContent}>
           
-          <Text style={styles.modalTitle}>Compra</Text>
+          {/* CABEÇALHO */}
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton} 
+              onPress={onClose} // Volta para a tela anterior
+            >
+              <Feather name="arrow-left" size={24} color="#ea580c" />
+            </TouchableOpacity>
+              <Text style={styles.modalTitle}>Compra</Text>
+          </View>
 
           {/* FAIXA AMARELA COM OS DADOS DA COMPRA */}
           <View style={styles.detalhesCard}>
@@ -90,6 +100,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 30,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 80,
+    position: 'relative',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 12,
+    right: '35%',
+    width: 50,
+    height: 40,
+    backgroundColor: '#fafaf9',
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+},
   modalTitle: {
     color: '#ffffff',
     fontSize: 28,
