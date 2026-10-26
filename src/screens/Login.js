@@ -1,46 +1,105 @@
 import React, { useState } from 'react';
-import {  View,  Text,  Image,  TouchableOpacity,  StyleSheet,  StatusBar, TextInput} from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, StatusBar, TextInput, ActivityIndicator, Alert,} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { login, register } from '../api/authApi';
 
 export default function Login({ navigation }) {
-  // Controla qual visualização está ativa: 'initial' (botões), 'login' ou 'register'
   const [viewMode, setViewMode] = useState('initial');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [nome, setNome] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit() {
+    if (!email || !senha) {
+      Alert.alert('Atenção', 'Preencha email e senha');
+      return;
+    }
+
+    if (viewMode === 'login') {
+      try {
+        setLoading(true);
+        const data = await login(email, senha);
+
+        await AsyncStorage.setItem('@token', data.token);
+
+        navigation.navigate('MainTabs');
+      } catch (error) {
+        console.log(error);
+        Alert.alert(
+          'Erro no login',
+          error.response?.data?.error || 'Não foi possível entrar'
+        );
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      if (!nome) {
+        Alert.alert('Atenção', 'Preencha seu nome');
+        return;
+      }
+
+      try {
+        setLoading(true);
+        await register(nome, email, senha);
+
+        Alert.alert('Sucesso', 'Conta criada! Faça login.');
+
+        setViewMode('login');
+        setNome('');
+        setEmail('');
+        setSenha('');
+      } catch (error) {
+        console.log(error);
+        Alert.alert(
+          'Erro no cadastro',
+          error.response?.data?.error || 'Não foi possível cadastrar'
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#E95220" />
-      
+
       <View style={styles.container}>
         <View style={styles.contentWrapper}>
-          
-          <Image 
-            source={require('../../assets/images/logoCantinaPay.png')} 
+
+          <Image
+            source={require('../../assets/images/logoCantinaPay.png')}
             style={styles.logo}
             resizeMode="contain"
           />
-          
+
           <View style={styles.textSection}>
             <View style={styles.bottomSection}>
               <Text style={styles.subtitle}>
                 Um cantinho de amor e de encher a barriga!
               </Text>
-              
+
               <View style={styles.actionSection}>
-                
-                {/*  ESTADO 1: TELA INICIAL (BOTÕES)  */}
+
+                {/* ESTADO 1: TELA INICIAL */}
                 {viewMode === 'initial' && (
                   <View style={styles.buttonsWrapper}>
-                    <TouchableOpacity 
-                      style={styles.emailButton} 
+                    <TouchableOpacity
+                      style={styles.emailButton}
                       activeOpacity={0.8}
-                      onPress={() => setViewMode('login')} // Muda para a tela de Login
+                      onPress={() => {
+                        console.log('CLICOU NO EMAIL');
+                        setViewMode('login');
+                      }}
                     >
                       <Text style={styles.emailButtonText}>Entre com E-mail</Text>
                     </TouchableOpacity>
-                    
+
                     <TouchableOpacity style={styles.googleButton} activeOpacity={0.8}>
-                      <Image 
-                        source={require('../../assets/images/logoGoogle.png')} 
+                      <Image
+                        source={require('../../assets/images/logoGoogle.png')}
                         style={styles.googleIcon}
                         resizeMode="contain"
                       />
@@ -49,45 +108,63 @@ export default function Login({ navigation }) {
                   </View>
                 )}
 
-                {/*  ESTADO 2 e 3: TELA DE LOGIN OU CADASTRO  */}
+                {/* ESTADO 2 e 3: LOGIN OU CADASTRO */}
                 {(viewMode === 'login' || viewMode === 'register') && (
                   <View style={styles.formWrapper}>
                     <View style={styles.inputsContainer}>
-                      <TextInput 
-                        style={styles.input} 
+                      {viewMode === 'register' && (
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Nome"
+                          placeholderTextColor="#ea580c"
+                          value={nome}
+                          onChangeText={setNome}
+                        />
+                      )}
+
+                      <TextInput
+                        style={styles.input}
                         placeholder="Email"
                         placeholderTextColor="#ea580c"
                         keyboardType="email-address"
                         autoCapitalize="none"
+                        value={email}
+                        onChangeText={setEmail}
                       />
-                      <TextInput 
-                        style={styles.input} 
+
+                      <TextInput
+                        style={styles.input}
                         placeholder="Senha"
                         placeholderTextColor="#ea580c"
-                        secureTextEntry // Esconde a senha com "pontinhos"
+                        secureTextEntry
+                        value={senha}
+                        onChangeText={setSenha}
                       />
                     </View>
 
-                    <TouchableOpacity 
-                      style={styles.submitButton} 
+                    <TouchableOpacity
+                      style={styles.submitButton}
                       activeOpacity={0.8}
                       onPress={() => {
-                        if (viewMode === 'login') {
-                          navigation.navigate('MainTabs'); // Nome da sua próxima tela
-                        }
+                        console.log('CLICOU EM ENTRAR');
+                        handleSubmit();
                       }}
                     >
-                      <Text style={styles.submitButtonText}>
-                        {viewMode === 'login' ? 'Entrar' : 'Cadastrar'}
-                      </Text>
+                      {loading ? (
+                        <ActivityIndicator color="#ea580c" />
+                      ) : (
+                        <Text style={styles.submitButtonText}>
+                          {viewMode === 'login' ? 'Entrar' : 'Cadastrar'}
+                        </Text>
+                      )}
                     </TouchableOpacity>
                   </View>
                 )}
-                
-                {/* ---------- RODAPÉ DINÂMICO ---------- */}
+
+                {/* RODAPÉ */}
                 <Text style={styles.footerText}>
                   {viewMode === 'register' ? 'Já tem conta? ' : 'Ainda não tem conta? '}
-                  <Text 
+                  <Text
                     style={styles.footerLink}
                     onPress={() => setViewMode(viewMode === 'register' ? 'login' : 'register')}
                   >
@@ -113,7 +190,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    // justifyContent: 'center',
     top: '18%',
     backgroundColor: '#E95220',
   },
@@ -163,7 +239,7 @@ const styles = StyleSheet.create({
   emailButton: {
     alignSelf: 'stretch',
     height: 40,
-    backgroundColor: '#fef3c7', 
+    backgroundColor: '#fef3c7',
     borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
@@ -173,7 +249,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emailButtonText: {
-    color: '#ea580c', 
+    color: '#ea580c',
     fontSize: 12,
     fontFamily: 'Actor',
     letterSpacing: -0.2,
@@ -182,7 +258,7 @@ const styles = StyleSheet.create({
   googleButton: {
     alignSelf: 'stretch',
     height: 36,
-    backgroundColor: '#fcd34d', 
+    backgroundColor: '#fcd34d',
     borderRadius: 5,
     flexDirection: 'row',
     alignItems: 'center',
@@ -216,8 +292,6 @@ const styles = StyleSheet.create({
   footerLink: {
     textDecorationLine: 'underline',
   },
-  
-  /* --- NOVOS ESTILOS DO FORMULÁRIO DE LOGIN/CADASTRO --- */
   formWrapper: {
     width: 224,
     flexDirection: 'column',
@@ -233,7 +307,7 @@ const styles = StyleSheet.create({
     height: 40,
     backgroundColor: '#fef3c7',
     borderRadius: 4,
-    paddingHorizontal: 16, // Espaçamento interno para o texto não colar na borda
+    paddingHorizontal: 16,
     color: '#ea580c',
     fontSize: 12,
     fontFamily: 'Actor',
@@ -249,6 +323,6 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: '#ea580c',
     fontSize: 24,
-    fontFamily: 'Acme', // Lembre-se de importar e carregar essa fonte também!
+    fontFamily: 'Acme',
   },
 });
