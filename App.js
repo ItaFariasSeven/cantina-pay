@@ -10,6 +10,7 @@ import HistoryBuy from './src/screens/HistoryBuy';
 import HistoryPay from './src/screens/HistoryPay';
 import Create from './src/screens/Create';
 import User from './src/screens/User';
+import { CarrinhoProvider } from './src/context/CarrinhoContext';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -17,17 +18,19 @@ const Tab = createBottomTabNavigator();
 // GRUPO DE TELAS COM A NAVBAR
 function MainApp() {
   return (
+    <CarrinhoProvider>
     <Tab.Navigator 
       screenOptions={{ headerShown: false }}
       tabBar={(props) => <NavBar {...props} />} 
     >
       {/* Coloque aqui todas as telas que DEVEM ter a NavBar */}
-      <Tab.Screen name="Shopping" component={Shopping} />
-      <Tab.Screen name="HistoryBuy" component={HistoryBuy} />
-      <Tab.Screen name="HistoryPay" component={HistoryPay} />
-      <Tab.Screen name="Create" component={Create} />
-      <Tab.Screen name="User" component={User} />
+        <Tab.Screen name="Shopping" component={Shopping} />
+        <Tab.Screen name="HistoryBuy" component={HistoryBuy} />
+        <Tab.Screen name="HistoryPay" component={HistoryPay} />
+        <Tab.Screen name="Create" component={Create} />
+        <Tab.Screen name="User" component={User} />
     </Tab.Navigator>
+    </CarrinhoProvider>
   );
 }
 

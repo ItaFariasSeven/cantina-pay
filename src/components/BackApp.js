@@ -46,7 +46,7 @@ export default function BackApp({ children, title, showSearch = true, onCartPres
 
       {/* RESTANTE DA TELA */}
       <View style={styles.content}>
-        <Text style={styles.placeholderText}>{children}</Text>
+        {children}
       </View>
 
     </SafeAreaView>
@@ -100,8 +100,6 @@ searchInput: {
   },
   content: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   placeholderText: {
     color: '#ea580c',

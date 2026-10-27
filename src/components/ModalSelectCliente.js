@@ -1,45 +1,90 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View,  Text,  StyleSheet,  TouchableOpacity,  TextInput,  FlatList,  ActivityIndicator,  Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import api from '../api/api';
+import { useCarrinho } from '../context/CarrinhoContext';
 
 export default function ModalSelectCliente({ onClose }) {
-  // Estado para a inteligência da barra de pesquisa
-  const [searchText, setSearchText] = useState('');
+  // Pega o ID da compra criada no carrinho para vincularmos ao cliente agora
+  const { compraPendenteId, setCompraPendenteId } = useCarrinho();
   
-  // Estado para saber qual aluno foi clicado (começa selecionando o ID 1)
-  const [alunoSelecionado, setAlunoSelecionado] = useState('1');
+  const [searchText, setSearchText] = useState('');
+  const [alunoSelecionado, setAlunoSelecionado] = useState(null);
+  
+  // Estados para gerenciar a API
+  const [clientes, setClientes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [salvando, setSalvando] = useState(false);
 
-  // Lista "falsa" de alunos. Pode colocar quantos quiser, a tela vai rolar!
-  const listaAlunos = [
-    { id: '1', nomeAluno: 'Nome Do Aluno 1', nomePai: 'Nome Do Pai Aluno' },
-    { id: '2', nomeAluno: 'João Silva', nomePai: 'Carlos Silva' },
-    { id: '3', nomeAluno: 'Maria Souza', nomePai: 'Ana Souza' },
-    { id: '4', nomeAluno: 'Pedro Santos', nomePai: 'Marcos Santos' },
-    { id: '5', nomeAluno: 'Lucas Oliveira', nomePai: 'Roberto Oliveira' },
-    { id: '6', nomeAluno: 'Ana Clara', nomePai: 'José Pereira' },
-    { id: '7', nomeAluno: 'Beatriz Costa', nomePai: 'Fernando Costa' },
-    { id: '8', nomeAluno: 'Gabriel Almeida', nomePai: 'Paulo Almeida' },
-    { id: '9', nomeAluno: 'Felipe Mendes', nomePai: 'Ricardo Mendes' },
-    { id: '10', nomeAluno: 'Julia Lima', nomePai: 'Sérgio Lima' },
-  ];
+  // Busca os clientes no banco de dados assim que o modal abre
+  useEffect(() => {
+    async function fetchClientes() {
+      try {
+        const response = await api.get('/clientes');
+        setClientes(response.data);
+        
+        // Se a lista não vier vazia, já deixa o primeiro aluno pré-selecionado
+        if (response.data.length > 0) {
+          setAlunoSelecionado(response.data[0].id);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar clientes:', error);
+        Alert.alert('Erro', 'Não foi possível carregar a lista de clientes.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchClientes();
+  }, []);
 
-  // Lógica que filtra os alunos em tempo real conforme você digita
-  const alunosFiltrados = listaAlunos.filter(aluno => 
+  // Lógica de filtro da barra de pesquisa
+  const alunosFiltrados = clientes.filter(aluno => 
     aluno.nomeAluno.toLowerCase().includes(searchText.toLowerCase()) ||
     aluno.nomePai.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // Como cada item da lista deve ser desenhado na tela
+  // Função que roda ao apertar "Confirmar"
+  async function handleConfirmar() {
+    if (!alunoSelecionado) {
+      Alert.alert('Atenção', 'Selecione um cliente para vincular à compra.');
+      return;
+    }
+
+    setSalvando(true);
+    try {
+      // Manda TUDO (Carrinho + Cliente) em uma única tacada pro banco!
+      await api.post('/compras', {
+        itens: itens.map((item) => ({
+          produtoId: item.produtoId,
+          quantidade: item.quantidade,
+          precoUnitario: item.precoUnitario,
+        })),
+        valorManual: Number(valorManual) || 0,
+        total: total,
+        clienteId: alunoSelecionado // <--- ID do aluno escolhido
+      });
+      
+      Alert.alert('Sucesso!', 'Compra salva e vinculada com sucesso.');
+      setValorManual(0); // Limpa o valor manual após o sucesso
+      onClose(); // Fecha o modal e volta para a tela inicial
+    } catch (error) {
+      console.error('Erro ao vincular cliente:', error);
+      Alert.alert('Erro', error.response?.data?.error || 'Não foi possível finalizar a compra.');
+    } finally {
+      setSalvando(false);
+    }
+  }
+
   const renderizarAluno = ({ item }) => {
-    // Verifica se este item é o que está selecionado
     const isSelecionado = item.id === alunoSelecionado;
 
     return (
       <TouchableOpacity 
         style={[
           styles.alunoItem, 
-          isSelecionado ? styles.alunoItemAtivo : null // Aplica fundo laranja se estiver selecionado
+          isSelecionado ? styles.alunoItemAtivo : null
         ]}
         onPress={() => setAlunoSelecionado(item.id)}
         activeOpacity={0.8}
@@ -54,49 +99,54 @@ export default function ModalSelectCliente({ onClose }) {
     <SafeAreaView style={styles.container}>
       
       {/* CABEÇALHO */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.iconContainer} onPress={onClose}>
-            <Feather name="arrow-left" size={24} color="#ea580c" />
-          </TouchableOpacity>
-          <Text style={styles.title}>Cliente</Text>
-        </View>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.iconContainer} onPress={onClose}>
+          <Feather name="arrow-left" size={24} color="#ea580c" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Cliente</Text>
+      </View>
 
       {/* BARRA DE PESQUISA */}
       <View style={styles.searchContainer}>
         <TextInput 
           style={styles.searchInput}
-          placeholder="Search"
+          placeholder="Pesquisar..."
           placeholderTextColor="#78716c"
           value={searchText}
-          onChangeText={setSearchText} // Atualiza o filtro a cada letra digitada
+          onChangeText={setSearchText}
         />
       </View>
 
-      {/* CAIXA COM A LISTA DE ALUNOS (Com rolagem automática) */}
+      {/* CAIXA COM A LISTA DE ALUNOS */}
       <View style={styles.listBorderContainer}>
-        <FlatList 
-          data={alunosFiltrados}
-          keyExtractor={(item) => item.id}
-          renderItem={renderizarAluno}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
-          // Mensagem amigável caso a pesquisa não encontre ninguém
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>Nenhum aluno encontrado.</Text>
-          }
-        />
+        {loading ? (
+          <ActivityIndicator size="large" color="#fafaf9" style={{ marginTop: 50 }} />
+        ) : (
+          <FlatList 
+            data={alunosFiltrados}
+            keyExtractor={(item) => item.id}
+            renderItem={renderizarAluno}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>Nenhum aluno encontrado.</Text>
+            }
+          />
+        )}
       </View>
 
       {/* RODAPÉ COM BOTÃO CONFIRMAR */}
       <View style={styles.footer}>
         <TouchableOpacity 
           style={styles.confirmButton}
-          onPress={() => {
-            // Por enquanto sem ação, como você pediu!
-            console.log("Confirmar clicado! Aluno ID:", alunoSelecionado);
-          }}
+          onPress={handleConfirmar}
+          disabled={salvando || loading}
         >
-          <Text style={styles.confirmButtonText}>Confirmar</Text>
+          {salvando ? (
+            <ActivityIndicator color="#dc2626" />
+          ) : (
+            <Text style={styles.confirmButtonText}>Confirmar</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -107,13 +157,11 @@ export default function ModalSelectCliente({ onClose }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '90%',
+    width: '100%',
     height: '100%',
     backgroundColor: '#ea580c', 
     borderTopLeftRadius: 100,
   },
-  
-  // --- CABEÇALHO ---
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -130,15 +178,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#ea580c', // Borda laranja do ícone
+    borderColor: '#ea580c', 
   },
   title: {
     color: '#fafaf9',
     fontSize: 28,
     fontWeight: 'bold',
   },
-
-  // --- PESQUISA ---
   searchContainer: {
     paddingHorizontal: 30,
     marginBottom: 20,
@@ -151,15 +197,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333333',
   },
-
-  // --- LISTA DE ALUNOS ---
   listBorderContainer: {
     flex: 1,
     marginHorizontal: 30,
     borderWidth: 1,
-    borderColor: '#ffedd5', // outline-orange-100 do Figma
+    borderColor: '#ffedd5',
     padding: 10,
-    marginBottom: 20, // Dá espaço para o botão Confirmar não colar na lista
+    marginBottom: 20,
   },
   listContent: {
     paddingBottom: 10,
@@ -167,11 +211,11 @@ const styles = StyleSheet.create({
   alunoItem: {
     paddingVertical: 12,
     paddingHorizontal: 15,
-    borderRadius: 30, // Arredonda os cantos como na imagem
+    borderRadius: 30,
     marginBottom: 5,
   },
   alunoItemAtivo: {
-    backgroundColor: '#dc2626', // Fundo laranja apenas para o selecionado
+    backgroundColor: '#dc2626', 
   },
   alunoNomeText: {
     color: '#fafaf9',
@@ -182,7 +226,7 @@ const styles = StyleSheet.create({
     color: '#fafaf9',
     fontSize: 12,
     fontWeight: 'bold',
-    marginTop: 2, // Pequeno respiro entre os nomes
+    marginTop: 2, 
   },
   emptyText: {
     color: '#ffedd5',
@@ -190,14 +234,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
   },
-
-  // --- RODAPÉ E BOTÃO ---
   footer: {
     alignItems: 'center',
-    marginBottom: 30, // Distância do botão para o fundo da tela
+    marginBottom: 30, 
   },
   confirmButton: {
-    backgroundColor: '#fcd34d', // bg-amber-300
+    backgroundColor: '#fcd34d', 
     width: 160,
     height: 45,
     borderRadius: 30,
@@ -210,7 +252,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   confirmButtonText: {
-    color: '#dc2626', // Texto vermelho combinando com o fundo
+    color: '#dc2626', 
     fontSize: 20,
     fontWeight: 'bold',
   }

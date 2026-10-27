@@ -47,12 +47,16 @@ model Produto {
 }
 
 model Compra {
-  id        String     @id @default(uuid())
-  clienteId String
-  cliente   Cliente    @relation(fields: [clienteId], references: [id])
-  itens     ItemCompra[]
-  total     Decimal    @db.Decimal(10, 2)
-  createdAt DateTime   @default(now())
+  id          Int         @id @default(autoincrement())
+  clienteId   Int?
+  cliente     Cliente?    @relation(fields: [clienteId], references: [id])
+  itens       ItemCompra[]
+  valorManual Decimal     @default(0) @db.Decimal(10, 2)
+  total       Decimal     @db.Decimal(10, 2)
+  status      String      @default("pendente") // pendente | paga | cancelada
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  pagamentos  Pagamento[]
 }
 
 model ItemCompra {
@@ -66,9 +70,10 @@ model ItemCompra {
 }
 
 model Pagamento {
-  id        String   @id @default(uuid())
-  clienteId String
-  cliente   Cliente  @relation(fields: [clienteId], references: [id])
+  id        Int      @id @default(autoincrement())
+  compraId  Int
+  compra    Compra   @relation(fields: [compraId], references: [id])
   valor     Decimal  @db.Decimal(10, 2)
+  data      DateTime @default(now())
   createdAt DateTime @default(now())
 }
