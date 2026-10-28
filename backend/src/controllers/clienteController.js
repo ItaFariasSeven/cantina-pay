@@ -2,19 +2,14 @@ const prisma = require('../config/database');
 
 exports.create = async (req, res) => {
   try {
-    const { nome, email, telefone } = req.body;
+    const { nomeAluno, nomePai } = req.body;
 
-    if (!nome || !email) {
-      return res.status(400).json({ error: 'Nome e email são obrigatórios.' });
-    }
-
-    const clienteExistente = await prisma.cliente.findUnique({ where: { email } });
-    if (clienteExistente) {
-      return res.status(409).json({ error: 'Email já cadastrado.' });
+    if (!nomeAluno || !nomePai) {
+      return res.status(400).json({ error: 'Nome do aluno e nome do pai são obrigatórios.' });
     }
 
     const cliente = await prisma.cliente.create({
-      data: { nome, email, telefone }
+      data: { nomeAluno, nomePai }
     });
 
     return res.status(201).json(cliente);
@@ -27,7 +22,7 @@ exports.create = async (req, res) => {
 exports.findAll = async (req, res) => {
   try {
     const clientes = await prisma.cliente.findMany({
-      orderBy: { nome: 'asc' }
+      orderBy: { nomeAluno: 'asc' } // O ERRO ESTAVA AQUI! Agora ele busca pelo nomeAluno!
     });
     return res.status(200).json(clientes);
   } catch (error) {
@@ -55,23 +50,16 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nome, email, telefone, saldo } = req.body;
+    const { nomeAluno, nomePai, saldo } = req.body;
 
     const clienteExistente = await prisma.cliente.findUnique({ where: { id } });
     if (!clienteExistente) {
       return res.status(404).json({ error: 'Cliente não encontrado.' });
     }
 
-    if (email && email !== clienteExistente.email) {
-      const emailJaUsado = await prisma.cliente.findUnique({ where: { email } });
-      if (emailJaUsado) {
-        return res.status(409).json({ error: 'Email já cadastrado.' });
-      }
-    }
-
     const cliente = await prisma.cliente.update({
       where: { id },
-      data: { nome, email, telefone, saldo }
+      data: { nomeAluno, nomePai, saldo }
     });
 
     return res.status(200).json(cliente);

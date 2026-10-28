@@ -18,12 +18,11 @@ model User {
 
 model Cliente {
   id         String      @id @default(uuid())
-  nome       String
-  email      String      @unique
-  telefone   String?
+  nomeAluno  String
+  nomePai    String
   saldo      Decimal     @default(0) @db.Decimal(10, 2)
   compras    Compra[]
-  pagamentos Pagamento[]
+  pagamentos Pagamento[] // Relação com Pagamento
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 }
@@ -31,24 +30,25 @@ model Cliente {
 model Categoria {
   id       String    @id @default(uuid())
   nome     String
+  icone    String?   // A coluna de ícone que adicionamos!
   produtos Produto[]
 }
 
 model Produto {
-  id          String     @id @default(uuid())
+  id          String       @id @default(uuid())
   nome        String
-  preco       Decimal    @db.Decimal(10, 2)
+  preco       Decimal      @db.Decimal(10, 2)
   imagem      String?
-  categoriaId String
-  categoria   Categoria  @relation(fields: [categoriaId], references: [id])
+  categoriaId String?
+  categoria   Categoria?    @relation(fields: [categoriaId], references: [id])
   itens       ItemCompra[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model Compra {
   id          Int         @id @default(autoincrement())
-  clienteId   Int?
+  clienteId   String?     // CORREÇÃO: Mudou de Int? para String? (Para bater com Cliente.id)
   cliente     Cliente?    @relation(fields: [clienteId], references: [id])
   itens       ItemCompra[]
   valorManual Decimal     @default(0) @db.Decimal(10, 2)
@@ -61,7 +61,7 @@ model Compra {
 
 model ItemCompra {
   id            String   @id @default(uuid())
-  compraId      String
+  compraId      Int      // CORREÇÃO: Mudou de String para Int (Para bater com Compra.id)
   compra        Compra   @relation(fields: [compraId], references: [id], onDelete: Cascade)
   produtoId     String
   produto       Produto  @relation(fields: [produtoId], references: [id])
@@ -73,6 +73,8 @@ model Pagamento {
   id        Int      @id @default(autoincrement())
   compraId  Int
   compra    Compra   @relation(fields: [compraId], references: [id])
+  clienteId String?  // CORREÇÃO: Adicionado para o cliente poder acessar seus pagamentos
+  cliente   Cliente? @relation(fields: [clienteId], references: [id])
   valor     Decimal  @db.Decimal(10, 2)
   data      DateTime @default(now())
   createdAt DateTime @default(now())

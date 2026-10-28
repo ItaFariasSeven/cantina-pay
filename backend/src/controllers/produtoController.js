@@ -2,29 +2,33 @@ const prisma = require('../config/database');
 
 exports.create = async (req, res) => {
   try {
-    const { nome, preco, estoque, categoriaId } = req.body;
+    const { nome, preco, imagem, categoriaId } = req.body;
 
-    if (!nome || preco === undefined || estoque === undefined || !categoriaId) {
+    if (!nome || preco === undefined) {
       return res.status(400).json({
-        error: 'Nome, preço, estoque e categoriaId são obrigatórios.',
+        error: 'Nome e preço são obrigatórios.',
       });
     }
 
-    const categoriaExistente = await prisma.categoria.findUnique({
-      where: { id: categoriaId },
-    });
+    const dadosProduto = {
+      nome,
+      preco: parseFloat(preco),
+      imagem,
+    };
 
-    if (!categoriaExistente) {
-      return res.status(404).json({ error: 'Categoria não encontrada.' });
+    if (categoriaId) {
+      const categoriaExistente = await prisma.categoria.findUnique({
+        where: { id: categoriaId },
+      });
+
+      if (!categoriaExistente) {
+        return res.status(404).json({ error: 'Categoria não encontrada.' });
+      }
+      dadosProduto.categoriaId = categoriaId;
     }
 
     const produto = await prisma.produto.create({
-      data: {
-        nome,
-        preco: parseFloat(preco),
-        estoque: parseInt(estoque),
-        categoriaId,
-      },
+      data: dadosProduto,
     });
 
     return res.status(201).json({
@@ -39,7 +43,15 @@ exports.create = async (req, res) => {
 
 exports.findAll = async (req, res) => {
   try {
+    const { categoriaId } = req.query; // Captura a categoria clicada no app!
+
+    const where = {};
+    if (categoriaId) {
+      where.categoriaId = categoriaId; // Aplica o filtro se existir
+    }
+
     const produtos = await prisma.produto.findMany({
+      where, // Insere o filtro na busca do banco
       include: {
         categoria: {
           select: {
@@ -90,7 +102,7 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nome, preco, estoque, categoriaId } = req.body;
+    const { nome, preco, imagem, categoriaId } = req.body;
 
     const produtoExistente = await prisma.produto.findUnique({
       where: { id },
@@ -113,7 +125,7 @@ exports.update = async (req, res) => {
     const dadosAtualizados = {};
     if (nome !== undefined) dadosAtualizados.nome = nome;
     if (preco !== undefined) dadosAtualizados.preco = parseFloat(preco);
-    if (estoque !== undefined) dadosAtualizados.estoque = parseInt(estoque);
+    if (imagem !== undefined) dadosAtualizados.imagem = imagem;
     if (categoriaId !== undefined) dadosAtualizados.categoriaId = categoriaId;
 
     const produto = await prisma.produto.update({
