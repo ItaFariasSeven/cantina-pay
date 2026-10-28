@@ -2,26 +2,27 @@ const prisma = require('../config/database');
 
 exports.criar = async (req, res) => {
   try {
-    // 1. Recebe o clienteId junto com os dados do carrinho
     const { itens, valorManual, total, clienteId } = req.body;
 
     if (!clienteId) {
       return res.status(400).json({ error: 'O clienteId é obrigatório.' });
     }
 
-    // 2. Cria a compra já vinculada ao cliente
     const compra = await prisma.compra.create({
       data: {
-        valorManual,
-        total,
-        clienteId, // <--- AQUI ESTÁ O SEGREDO QUE FALTAVA
+        valorManual: Number(valorManual) || 0,
+        total: Number(total) || 0,
+        clienteId: clienteId,
         itens: {
-          create: itens?.map(item => ({
+          create: (itens || []).map(item => ({
             produtoId: item.produtoId,
-            quantidade: item.quantidade,
-            precoUnitario: item.precoUnitario
-          })) || []
+            quantidade: Number(item.quantidade),
+            precoUnitario: Number(item.precoUnitario)
+          }))
         }
+      },
+      include: {
+        itens: true, // Já retorna os itens criados para conferência
       }
     });
 

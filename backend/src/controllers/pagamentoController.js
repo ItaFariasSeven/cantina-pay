@@ -2,38 +2,70 @@ const prisma = require('../config/database');
 
 exports.create = async (req, res) => {
   try {
-    const { clienteId, valor } = req.body;
+    const { compraId, valor } = req.body;
 
-    if (!clienteId || valor === undefined || valor === null) {
-      return res.status(400).json({ error: 'clienteId e valor são obrigatórios.' });
+    if (!compraId || valor === undefined || valor === null) {
+      return res.status(400).json({ error: 'compraId e valor são obrigatórios.' });
     }
 
-    if (valor <= 0) {
+    const valorPagamento = Number(valor);
+
+    if (valorPagamento <= 0) {
       return res.status(400).json({ error: 'O valor do pagamento deve ser maior que zero.' });
     }
 
-    const cliente = await prisma.cliente.findUnique({ where: { id: clienteId } });
+    // Busca a compra COM os pagamentos já feitos nela para sabermos o saldo
+    const compra = await prisma.compra.findUnique({ 
+      where: { id: Number(compraId) },
+      include: { pagamentos: true }
+    });
 
-    if (!cliente) {
-      return res.status(404).json({ error: 'Cliente não encontrado.' });
+    if (!compra) {
+      return res.status(404).json({ error: 'Compra não encontrada.' });
+    }
+
+    // Calcula o saldo devedor atual da compra
+    const totalPagoAteAgora = compra.pagamentos.reduce((acc, p) => acc + Number(p.valor), 0);
+    const valorDaCompra = Number(compra.total);
+    const saldoDevedor = valorDaCompra - totalPagoAteAgora;
+
+    // Trava de segurança no backend
+    if (valorPagamento > saldoDevedor) {
+      return res.status(400).json({ error: `O valor excede o saldo devedor da compra (R$ ${saldoDevedor.toFixed(2)}).` });
     }
 
     const pagamento = await prisma.$transaction(async (tx) => {
+      // Cria o pagamento vinculado à compra e ao cliente
       const novoPagamento = await tx.pagamento.create({
         data: {
-          clienteId,
-          valor: Number(valor),
+          compraId: compra.id,
+          clienteId: compra.clienteId, 
+          valor: valorPagamento,
         },
       });
 
-      await tx.cliente.update({
-        where: { id: clienteId },
-        data: {
-          saldo: {
-            increment: Number(valor),
+      // Atualiza o saldo do cliente (abatendo a dívida total dele)
+      if (compra.clienteId) {
+        await tx.cliente.update({
+          where: { id: compra.clienteId },
+          data: {
+            saldo: {
+              increment: valorPagamento,
+            },
           },
-        },
-      });
+        });
+      }
+
+      // Verifica se o pagamento de agora quitou a compra 100%
+      const novoTotalPago = totalPagoAteAgora + valorPagamento;
+      
+      // Se quitou totalmente, muda o status para "paga" para ela sumir da tela
+      if (novoTotalPago >= valorDaCompra) {
+        await tx.compra.update({
+          where: { id: compra.id },
+          data: { status: 'paga' }
+        });
+      }
 
       return novoPagamento;
     });
@@ -53,6 +85,11 @@ exports.findAll = async (req, res) => {
     const pagamentos = await prisma.pagamento.findMany({
       include: {
         cliente: true,
+        compra: {
+          include: {
+            cliente: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -71,9 +108,14 @@ exports.findOne = async (req, res) => {
     const { id } = req.params;
 
     const pagamento = await prisma.pagamento.findUnique({
-      where: { id },
+      where: { id: Number(id) },
       include: {
         cliente: true,
+        compra: {
+          include: {
+            cliente: true,
+          },
+        },
       },
     });
 
@@ -93,7 +135,7 @@ exports.remove = async (req, res) => {
     const { id } = req.params;
 
     const pagamento = await prisma.pagamento.findUnique({
-      where: { id },
+      where: { id: Number(id) },
     });
 
     if (!pagamento) {
@@ -101,18 +143,30 @@ exports.remove = async (req, res) => {
     }
 
     await prisma.$transaction(async (tx) => {
-      await tx.cliente.update({
-        where: { id: pagamento.clienteId },
-        data: {
-          saldo: {
-            decrement: Number(pagamento.valor),
+      // Reverte o saldo do cliente
+      if (pagamento.clienteId) {
+        await tx.cliente.update({
+          where: { id: pagamento.clienteId },
+          data: {
+            saldo: {
+              decrement: Number(pagamento.valor),
+            },
           },
-        },
-      });
-
+        });
+      }
+      
+      // Deleta o pagamento
       await tx.pagamento.delete({
-        where: { id },
+        where: { id: Number(id) },
       });
+      
+      // Ao deletar um pagamento, a compra volta a ficar pendente
+      if (pagamento.compraId) {
+        await tx.compra.update({
+           where: { id: pagamento.compraId },
+           data: { status: 'pendente' }
+        });
+      }
     });
 
     return res.status(200).json({ message: 'Pagamento cancelado com sucesso.' });
