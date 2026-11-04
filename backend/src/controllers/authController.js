@@ -82,3 +82,39 @@ exports.login = async (req, res) => {
     return res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 };
+
+exports.update = async (req, res) => {
+  try {
+    // O authMiddleware coloca o userId na requisição
+    const userId = req.userId; 
+    const { nome, email } = req.body;
+
+    if (!nome || !email) {
+      return res.status(400).json({ error: 'Nome e email são obrigatórios.' });
+    }
+
+    // Verifica se o novo email já está sendo usado por outra pessoa
+    const emailExistente = await prisma.user.findUnique({ where: { email } });
+    if (emailExistente && emailExistente.id !== userId) {
+      return res.status(409).json({ error: 'Este email já está em uso.' });
+    }
+
+    // Atualiza o usuário no banco
+    const usuarioAtualizado = await prisma.user.update({
+      where: { id: userId },
+      data: { nome, email },
+    });
+
+    return res.status(200).json({
+      message: 'Dados atualizados com sucesso.',
+      usuario: {
+        id: usuarioAtualizado.id,
+        nome: usuarioAtualizado.nome,
+        email: usuarioAtualizado.email,
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar usuário:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+};
