@@ -1,0 +1,44 @@
+name: Gerar APK Android
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./CantinaPay
+
+    steps:
+      - name: Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Gerar pasta nativa Android (Prebuild)
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Compilar APK de Release
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Disponibilizar APK para download
+        uses: actions/upload-artifact@v4
+        with:
+          name: CantinaPay-APK
+          path: CantinaPay/android/app/build/outputs/apk/release/app-release.apk
