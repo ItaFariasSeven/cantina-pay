@@ -1,0 +1,27 @@
+# Dependências
+node_modules/
+.pnp
+.pnp.js
+
+# Pastas do Expo
+.expo/
+dist/
+web-build/
+
+# Arquivos de log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.*.local
+
+# Arquivos do sistema operacional (macOS/Windows)
+.DS_Store
+Thumbs.db
+
+# Pastas de build nativo (caso faça 'eject' depois)
+android/
+ios/
