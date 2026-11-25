@@ -7,7 +7,8 @@ const api = axios.create({
   // baseURL: 'http://10.227.22.32:3333', // Quarto - ADV-GUEST 2
   // baseURL: 'http://10.227.24.97:3333', // Quarto - FAAMA-EDU 2
   // baseURL: 'http://10.227.76.178:3333', // Trabalho/APK - FAAMA-BYOD 
-  baseURL: 'https://financial-jones-quiz-reunion.trycloudflare.com',
+  // baseURL: 'https://financial-jones-quiz-reunion.trycloudflare.com',
+  baseURL: 'http://localhost:3333',
   timeout: 60000,
   headers: {
     'Content-Type': 'application/json',
